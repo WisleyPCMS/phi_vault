@@ -7,6 +7,31 @@
 - 搜尋曲目、自訂譜面、上傳個人曲繪、PNG 成績圖、JSON/CSV 匯出和 JSON 合併還原。
 - 327 首曲目 / 1,037 張譜面的內建資料快照；曲繪在 `public/illustrations`，曲目、難度和定數在 `data/catalog.json`。
 
+## 成績圖匯出
+
+首頁「生成成績圖」會開啟預覽；可在預覽或「帳號與資料 → 成績圖樣式」切換模式及解析度，再按「套用並重新生成」。
+
+| 模式 | 標準 PNG | 高清 PNG | 內容 |
+| --- | --- | --- | --- |
+| 完整長圖 | 1500 × 2160 | 3000 × 4320 | P3、B27、Overflow 6 |
+| 社群分享 | 1500 × 1800 | 3000 × 3600 | P3、B27 |
+
+兩種模式共用同一套排名結果及卡片繪製程式，P3 和 B27 可以重複收錄同一張 AP 譜面。長曲名只在繪圖時縮放、換行或省略，原始名稱不變。IN 使用紅色資訊標籤，AT 使用黑色；分數及 ACC 使用隨網站提供的數字字體與固定數字欄寬。
+
+匯出會等待字體和曲繪解碼，限制圖片並行載入及等待時間。缺少曲繪時使用預設封面，字體逾時則重新按備用字體量測，並在預覽顯示提示。生成中可取消；裝置記憶體不足時可改用標準解析度。公開跨來源曲繪必須允許 CORS。
+
+純函式及載入故障測試包含於 `npm test`。可另用本機備份執行 Canvas 圖像檢查，不會讀寫資料庫或呼叫帳號 API：
+
+```sh
+# 選用的開發檢查工具，安裝在忽略的目錄，非網站依賴
+npm install --prefix .data/report-render --no-save @napi-rs/canvas
+node scripts/render-report-qa.mjs /path/to/backup.json
+# 也可傳入輸出目錄及既有的 native Canvas 模組路徑
+node scripts/render-report-qa.mjs /path/to/backup.json .data/report-qa /path/to/canvas/index.js
+```
+
+檢查會產生四種尺寸、750px 縮圖和重點卡片，確認共同區域最多差兩個色階且差異低於 0.1%（原生繪圖反鋸齒容差）、文字寬度、分數留白、PNG 尺寸、輸入資料未修改，以及載入／編碼失敗的處理。結果和私人備份應保留在 `.data`，不要提交。此工具以原生 Canvas 及模擬的瀏覽器載入介面驗證，實際瀏覽器與行動裝置下載仍需另行檢查。
+
 ## 技術和儲存
 
 Next.js App Router / React / TypeScript，部署到 Vercel。
