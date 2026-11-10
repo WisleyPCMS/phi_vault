@@ -2,6 +2,7 @@ import 'server-only';
 import {createClient, type Client, type InValue} from '@libsql/client';
 import {mkdir} from 'node:fs/promises';
 import {schema} from './schema.mjs';
+import {DatabaseFailure, databaseFailure, databaseConfiguration} from './database-errors';
 
 // The small adapter keeps record upserts and full-library imports transactional.
 class Statement {
@@ -21,14 +22,17 @@ class Statement {
 let pending: ReturnType<typeof connect> | undefined;
 async function connect() {
   const local = process.env.PHI_LOCAL_STORAGE === '1' && !process.env.VERCEL;
-  const url = process.env.TURSO_DATABASE_URL || (local ? 'file:.data/vault.db' : '');
+  const url = process.env.TURSO_DATABASE_URL?.trim() || (local ? 'file:.data/vault.db' : '');
   if (!url || (!local && !/^(libsql|https):\/\//.test(url))) {
-    throw Object.assign(new Error('雲端資料庫尚未設定'), {status: 503});
+    throw new DatabaseFailure(url?'DB_URL_INVALID':'DB_URL_MISSING');
   }
+  if(!local&&!databaseConfiguration(process.env).tokenConfigured)throw new DatabaseFailure('DB_TOKEN_MISSING');
   if (local) await mkdir('.data', {recursive: true});
-  const client = createClient({url, authToken: process.env.TURSO_AUTH_TOKEN || process.env.TURSO_DATABASE_AUTH_TOKEN});
+  let client:Client;
+  try {client=createClient({url, authToken: process.env.TURSO_AUTH_TOKEN?.trim() || process.env.TURSO_DATABASE_AUTH_TOKEN?.trim()});}
+  catch(error){throw databaseFailure(error);}
   try { await client.executeMultiple(schema); }
-  catch (error) { client.close(); throw error; }
+  catch (error) { client.close(); throw databaseFailure(error); }
   return {
     prepare(sql: string) { return new Statement(client, sql); },
     batch(statements: Statement[]) {

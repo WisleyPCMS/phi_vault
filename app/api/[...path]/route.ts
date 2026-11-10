@@ -1,4 +1,5 @@
 import { getDatabase } from '../../../lib/database';
+import { DatabaseFailure, databaseConfiguration } from '../../../lib/database-errors';
 import { saveArtwork, loadArtwork } from '../../../lib/artwork-storage';
 import sharp from 'sharp';
 import catalog from '../../../data/catalog.json';
@@ -22,6 +23,7 @@ async function handler(request:Request){
  try{
   const db=await getDatabase();
   const url=new URL(request.url),path=url.pathname.replace(/^\/api\//,''),now=Date.now();
+  if(path==='health'&&request.method==='GET'){await db.prepare('SELECT 1').first();return json({status:'ready',revision:process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7)||'local',database:'connected'});}
   if(request.method!=='GET'){const origin=request.headers.get('origin');if(origin&&origin!==url.origin)fail('請從本站操作',403);}
   const token=request.headers.get('cookie')?.match(/(?:^|;\s*)phi_session=([a-f0-9]{64})(?:;|$)/)?.[1];
   const profile=token?await db.prepare('SELECT p.* FROM sessions s JOIN profiles p ON s.profile_id=p.id WHERE s.token_hash=? AND s.expires_at>?').bind(await sha(token),now).first<Profile>():null;
@@ -108,6 +110,6 @@ async function handler(request:Request){
    if(statements.length)await db.batch(statements);return json({ok:true,count:b.records.length});
   }
   fail('找不到此功能',404);
- }catch(e){const error=e as Error & {status?:number},status=error.status||(/ACC|成績格式/.test(error.message)?400:500);if(status===500)console.error('Vault API failed',error);return json({error:status===500?'儲存失敗，請稍後重試':error.message},status);}
+ }catch(e){if(e instanceof DatabaseFailure){const diagnostic={code:e.code,driverCode:e.driverCode,remoteStatus:e.remoteStatus};console.error('Vault database unavailable',diagnostic);return json({error:e.message,...diagnostic,...(new URL(request.url).pathname==='/api/health'?{configuration:databaseConfiguration(process.env),revision:process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7)||'local'}:{})},e.status);}const error=e as Error & {status?:number},status=error.status||(/ACC|成績格式/.test(error.message)?400:500);if(status===500)console.error('Vault API failed',{name:error.name});return json({error:status===500?'儲存失敗，請稍後重試':error.message},status);}
 }
 export const GET=handler;export const POST=handler;export const PUT=handler;export const DELETE=handler;
