@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {buildBackup,parseBackup,metadata,restoreArtwork} from '../lib/backup.ts';
+const origin=process.env.PHI_TEST_URL||'http://127.0.0.1:3002';
+const sourceOrigin=process.env.PHI_SOURCE_URL||origin;
+if(![origin,sourceOrigin].every(url=>['localhost','127.0.0.1'].includes(new URL(url).hostname)))throw new Error('Local tests only');
+const catalog=JSON.parse(await readFile(new URL('../data/catalog.json',import.meta.url)));
+const charts=catalog.songs.flatMap(s=>s.charts.map(c=>({...c,title:s.title,artist:s.artist,artwork:s.artwork})));
+let checks=0;
+function account(base=origin){let cookie='';return async(path,method='GET',body,expected=200)=>{
+ const r=await fetch(base+'/api/'+path,{method,headers:{Cookie:cookie,...(body instanceof FormData?{}:{'Content-Type':'application/json'})},body:body instanceof FormData?body:body?JSON.stringify(body):undefined});
+ for(const c of r.headers.getSetCookie())cookie=c.split(';')[0];
+ assert.equal(r.status,expected,path+' '+await r.clone().text());checks++;
+ if(path.startsWith('artwork?'))return r;
+ return r.json();
+};}
+const source=account(sourceOrigin),target=account(),password='Local_'+crypto.randomUUID(),name='QA-Transfer-'+Date.now();
+await source('auth/register','POST',{username:name+'-source',password});
+await source('records','PUT',{chartId:charts[0].id,score:970000,acc:99,status:'FC'});
+const custom=await source('charts','POST',{title:'Transfer custom',artist:'QA',difficulty:'AT',constant:16.5,level:16});
+await source('records','PUT',{chartId:custom.id,score:1000000,acc:100,status:'AP'});
+const challenge=charts.filter(c=>c.difficulty==='IN').slice(0,3).map(c=>({chartId:c.id,score:990000,acc:99}));
+await source('challenge','PUT',{entries:challenge});
+const form=new FormData();form.set('songId',custom.id);form.set('file',new File([await readFile(new URL('../public'+catalog.songs[0].artwork,import.meta.url))],'test.webp',{type:'image/webp'}));
+await source('artwork','POST',form);
+const original=await source('data');
+const file=await buildBackup(original,true,()=>{},id=>source('artwork?songId='+encodeURIComponent(id)));
+assert.equal(file.artworkFiles.length,1);checks++;
+const backup=parseBackup(JSON.parse(JSON.stringify(file)),charts);
+const targetProfile=await target('auth/register','POST',{username:name+'-target',password});
+await target('records','PUT',{chartId:charts[0].id,score:990000,acc:98,status:'NONE'});
+await target('import','POST',{...metadata(backup),targetProfileId:original.profile.id},409);
+assert.equal((await target('data')).records.length,1);checks++;
+await target('import','POST',{...metadata(backup),targetProfileId:targetProfile.profile.id});
+const badImage=new FormData();badImage.set('songId',custom.id);badImage.set('file',form.get('file'));badImage.set('targetProfileId',original.profile.id);
+await target('artwork','POST',badImage,409);
+assert.equal((await target('data')).artworks.length,0);checks++;
+const upload=(path,method,body)=>{body.set('targetProfileId',targetProfile.profile.id);return target(path,method,body);};
+const uploaded=await restoreArtwork(backup.artworkFiles,upload,async f=>f,()=>{});
+assert.deepEqual(uploaded.failed,[]);checks++;
+await target('import','POST',metadata(backup)); // Repeating the transfer is safe.
+const next=await target('data');
+assert.equal(next.records.length,2);assert.equal(next.customCharts.length,1);assert.deepEqual(next.challenge,challenge);checks+=3;
+assert.deepEqual(next.records.find(r=>r.chartId===charts[0].id),{chartId:charts[0].id,score:990000,acc:99,status:'FC',updatedAt:next.records.find(r=>r.chartId===charts[0].id).updatedAt});checks++;
+assert.equal(next.records.find(r=>r.chartId===custom.id).status,'AP');assert.equal(next.artworks.length,1);checks+=2;
+const artwork=await target('artwork?songId='+encodeURIComponent(custom.id));assert.equal(artwork.headers.get('content-type'),'image/webp');checks++;
+assert.equal((await source('data')).records.length,2);checks++;
+console.log(JSON.stringify({transferChecks:checks,status:'passed',source:sourceOrigin,target:origin,scope:'local only'}));

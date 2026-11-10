@@ -78,6 +78,7 @@ async function handler(request:Request){
   if(path==='artwork'&&request.method==='POST'){
    if(Number(request.headers.get('content-length'))>3500000)fail('圖片太大，請透過網頁重新選擇圖片',413);
    const form=await request.formData(),file=form.get('file'),songId=String(form.get('songId')||'');
+   if(form.has('targetProfileId')&&form.get('targetProfileId')!==pid)fail('登入帳號已變更，請重新開啟搬移視窗',409);
    if(!(file instanceof File)||file.size>3400000||!['image/png','image/jpeg','image/webp'].includes(file.type))fail('請選擇 PNG、JPG 或 WebP 圖片，並透過網頁上傳');
    if(!catalog.songs.some(s=>s.id===songId)&&!await db.prepare('SELECT chart_id FROM custom_charts WHERE profile_id=? AND song_id=?').bind(pid,songId).first())fail('找不到曲目');
    const bytes=await file.arrayBuffer(),head=new Uint8Array(bytes);const png=head[0]===137&&head[1]===80&&head[2]===78&&head[3]===71,jpg=head[0]===255&&head[1]===216&&head[2]===255,webp=String.fromCharCode(...head.slice(0,4))==='RIFF'&&String.fromCharCode(...head.slice(8,12))==='WEBP';if(!png&&!jpg&&!webp)fail('圖片內容格式不正確');
@@ -94,6 +95,7 @@ async function handler(request:Request){
   }
   if(path==='import'&&request.method==='POST'){
    const b=await read(request);if(b.format!=='phi-vault-v1'||!Array.isArray(b.records)||b.records.length>2000)fail('請選擇 PHI VAULT 匯出的 JSON 備份');
+   if(b.targetProfileId!==undefined&&b.targetProfileId!==pid)fail('登入帳號已變更，請重新開啟搬移視窗',409);
    const custom=Array.isArray(b.customCharts)?b.customCharts:[];if(custom.length>300)fail('自訂譜面數量超過限制');
    const prior=await db.prepare('SELECT chart_id AS id,difficulty FROM custom_charts WHERE profile_id=?').bind(pid).all<{id:string;difficulty:string}>();
    const known=new Map<string,{difficulty:string}>([...baseCharts,...prior.results.map(c=>[c.id,c] as [string,typeof c])]);const statements=[];

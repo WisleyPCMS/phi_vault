@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1 --port 3002",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/game.test.mjs",
+    "test": "node --test tests/game.test.mjs tests/backup.test.mjs",
     "test:integration": "node tests/integration.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs"
   },

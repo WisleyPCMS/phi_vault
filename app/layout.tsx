@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./fonts.css";
 import "./phi.css";
 import "./refinements.css";
+import "./transfer.css";
 
 export const metadata: Metadata = {
   title: "PHI VAULT · Phigros 成績庫",
