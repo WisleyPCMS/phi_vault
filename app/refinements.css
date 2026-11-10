@@ -1,0 +1,32 @@
+.challenge-badge{--badge-edge:#f1f5f4;--badge-fill:#d6e1de40;--badge-glow:#e9f7f233;display:inline-block;position:relative;isolation:isolate;width:66px;height:37px;padding:0;border:0;clip-path:none;background:transparent;color:#fff;vertical-align:middle;flex-shrink:0}
+.challenge-badge .challenge-plate{position:absolute;left:6px;right:6px;bottom:3px;height:19px;transform:skew(-16deg);border-left:3px solid var(--badge-edge);border-right:3px solid var(--badge-edge);background:linear-gradient(90deg,transparent,var(--badge-fill) 25%,var(--badge-fill) 85%,transparent);box-shadow:-2px 0 8px var(--badge-glow),2px 0 8px var(--badge-glow);opacity:1}
+.challenge-badge .challenge-value{position:absolute;inset:auto 0 7px;text-align:center;font:400 38px/1 'Barlow Condensed',Arial,sans-serif;letter-spacing:.5px;color:#fff;opacity:1;text-shadow:0 0 3px #ffffff25}
+.challenge-badge.green{--badge-edge:#62ff00;--badge-fill:#509b2b80;--badge-glow:#65ff003d}
+.challenge-badge.blue{--badge-edge:#00e4ff;--badge-fill:#2d899980;--badge-glow:#00e4ff42}
+.challenge-badge.red{--badge-edge:#ff6500;--badge-fill:#a34a248a;--badge-glow:#ff650047}
+.challenge-badge.gold{--badge-edge:#f5f000;--badge-fill:#aaa92985;--badge-glow:#f5f00052}
+.challenge-badge.rainbow .challenge-plate{border-left-color:#00dcff;border-right-color:#ff596c;background:linear-gradient(90deg,#00bddd70,#4bbd5680,#a9b42c80,#ce3a5590);box-shadow:-2px 0 8px #00dfff45,2px 0 8px #ff586845}
+.challenge-badge.unset{width:auto;height:auto;border:1px solid #3b5147;padding:4px 8px;font-size:10px;color:#b5c9bd;border-radius:3px}
+.page-heading>.challenge-badge{width:132px;height:80px}
+.page-heading>.challenge-badge .challenge-plate{left:11px;right:11px;bottom:6px;height:34px;border-left-width:5px;border-right-width:5px}
+.page-heading>.challenge-badge .challenge-value{font-size:81px;bottom:12px}
+.tier-guide .challenge-badge{width:76px;height:48px}
+.tier-guide .challenge-badge .challenge-plate{height:23px;bottom:4px}
+.tier-guide .challenge-badge .challenge-value{font-size:48px;bottom:9px}
+.tier-guide>div>div{align-items:flex-start}
+.grade,.table-grade{font-weight:800}
+.diff-IN{background:#d71e35;border-color:#ff5a6c;color:#fff}
+.diff-AT{background:#07090c;border-color:#4c525a;color:#f4f5f7}
+.filter-pills button[data-difficulty="IN"],.section-filters button[data-difficulty="IN"]{background:#621622;border:1px solid #ae293d;color:#ffb8c2}
+.filter-pills button[data-difficulty="IN"].selected,.section-filters button[data-difficulty="IN"].selected{background:#ce2038;border-color:#ff7a8c;color:#fff}
+.filter-pills button[data-difficulty="AT"],.section-filters button[data-difficulty="AT"]{background:#080a0d;border:1px solid #454a52;color:#d4d8df}
+.filter-pills button[data-difficulty="AT"].selected,.section-filters button[data-difficulty="AT"].selected{background:#030405;border-color:#b5bec9;color:#fff}
+option[data-difficulty="IN"]{background:#8e1828;color:#fff}
+option[data-difficulty="AT"]{background:#080a0d;color:#fff}
+select:has(option[value="IN"]:checked){background:#611722;color:#ffdce2;border-color:#bd364b}
+select:has(option[value="AT"]:checked){background:#07090c;color:#f3f5f8;border-color:#59616b}
+.score-card.at-card{background:#14171c;border-color:#3e454e}
+.score-card.at-card:after{background:#06080b;border-left:1px solid #59616c}
+.at-card .art-fade{background:linear-gradient(105deg,transparent 45%,#14171c 88%)}
+.red-text{color:#ff8f50}
+@media(max-width:640px){.page-heading>.challenge-badge{width:112px;height:69px}.page-heading>.challenge-badge .challenge-value{font-size:69px;bottom:11px}.page-heading>.challenge-badge .challenge-plate{height:30px}}

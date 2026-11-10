@@ -1,0 +1,8 @@
+.git
+.env*
+.data
+test-results
+tests
+coverage
+outputs
+*.tsbuildinfo
