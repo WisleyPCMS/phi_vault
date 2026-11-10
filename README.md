@@ -51,7 +51,9 @@ node tests/transfer-integration.mjs
 
 只將憑證放在伺服器環境變數，勿使用 `NEXT_PUBLIC_*`。不要在 Vercel 設定 `PHI_LOCAL_STORAGE`。
 
-若連接畫面要求 Custom Prefix，填 `TURSO_DATABASE`，使網址變數名稱為 `TURSO_DATABASE_URL`。程式同時接受 `TURSO_AUTH_TOKEN` 和 `TURSO_DATABASE_AUTH_TOKEN`。上方 Environments 保留 Production；此網站使用固定的正式資料庫，下方「Create database branch for deployment」先不要勾選。
+若連接畫面要求 Custom Prefix，填 `TURSO_DATABASE`，使網址變數名稱為 `TURSO_DATABASE_URL`。Token 同時接受 `TURSO_AUTH_TOKEN`、`TURSO_DATABASE_AUTH_TOKEN` 和此整合實際產生的 `TURSO_DATABASE_TURSO_AUTH_TOKEN`。上方 Environments 保留 Production；此網站使用固定的正式資料庫，下方「Create database branch for deployment」先不要勾選。
+
+`/api/health` 提供資料庫連接狀態及部署版本；失敗時只顯示設定是否存在、環境變數名稱和安全錯誤代碼，不會顯示連線網址、Token 或個人成績。
 
 `vercel.json` 將函式設為香港區域；Turso 可選鄰近的東京區域。
 

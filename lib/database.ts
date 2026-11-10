@@ -29,7 +29,7 @@ async function connect() {
   if(!local&&!databaseConfiguration(process.env).tokenConfigured)throw new DatabaseFailure('DB_TOKEN_MISSING');
   if (local) await mkdir('.data', {recursive: true});
   let client:Client;
-  try {client=createClient({url, authToken: process.env.TURSO_AUTH_TOKEN?.trim() || process.env.TURSO_DATABASE_AUTH_TOKEN?.trim()});}
+  try {client=createClient({url, authToken: process.env.TURSO_AUTH_TOKEN?.trim() || process.env.TURSO_DATABASE_AUTH_TOKEN?.trim() || process.env.TURSO_DATABASE_TURSO_AUTH_TOKEN?.trim()});}
   catch(error){throw databaseFailure(error);}
   try { await client.executeMultiple(schema); }
   catch (error) { client.close(); throw databaseFailure(error); }

@@ -40,7 +40,7 @@ export function databaseConfiguration(env:Record<string,string|undefined>) {
   let tokenInUrl=false;try{tokenInUrl=!!new URL(url).searchParams.get('authToken');}catch{}
   return {
     urlConfigured:!!url,
-    tokenConfigured:!!(env.TURSO_AUTH_TOKEN?.trim()||env.TURSO_DATABASE_AUTH_TOKEN?.trim())||tokenInUrl,
+    tokenConfigured:!!(env.TURSO_AUTH_TOKEN?.trim()||env.TURSO_DATABASE_AUTH_TOKEN?.trim()||env.TURSO_DATABASE_TURSO_AUTH_TOKEN?.trim())||tokenInUrl,
     tokenInUrl,
     variableNames:Object.keys(env).filter(name=>/^TURSO[A-Z0-9_]{0,80}$/.test(name)&&!!env[name]).slice(0,16),
   };

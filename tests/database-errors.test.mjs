@@ -25,5 +25,6 @@ test('public diagnostics never include URLs, token values, SQL or arbitrary erro
 test('configuration accepts integration token names and embedded auth tokens',()=>{
  assert.equal(databaseConfiguration({TURSO_DATABASE_URL:'libsql://test'}).tokenConfigured,false);
  assert.equal(databaseConfiguration({TURSO_DATABASE_AUTH_TOKEN:'test'}).tokenConfigured,true);
+ assert.equal(databaseConfiguration({TURSO_DATABASE_TURSO_AUTH_TOKEN:'test'}).tokenConfigured,true);
  assert.equal(databaseConfiguration({TURSO_DATABASE_URL:'https://test?authToken=test'}).tokenConfigured,true);
 });
