@@ -51,6 +51,8 @@ node tests/transfer-integration.mjs
 
 只將憑證放在伺服器環境變數，勿使用 `NEXT_PUBLIC_*`。不要在 Vercel 設定 `PHI_LOCAL_STORAGE`。
 
+若連接畫面要求 Custom Prefix，填 `TURSO_DATABASE`，使網址變數名稱為 `TURSO_DATABASE_URL`。程式同時接受 `TURSO_AUTH_TOKEN` 和 `TURSO_DATABASE_AUTH_TOKEN`。上方 Environments 保留 Production；此網站使用固定的正式資料庫，下方「Create database branch for deployment」先不要勾選。
+
 `vercel.json` 將函式設為香港區域；Turso 可選鄰近的東京區域。
 
 ## 地區與外部資源

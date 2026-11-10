@@ -26,7 +26,7 @@ async function connect() {
     throw Object.assign(new Error('雲端資料庫尚未設定'), {status: 503});
   }
   if (local) await mkdir('.data', {recursive: true});
-  const client = createClient({url, authToken: process.env.TURSO_AUTH_TOKEN});
+  const client = createClient({url, authToken: process.env.TURSO_AUTH_TOKEN || process.env.TURSO_DATABASE_AUTH_TOKEN});
   try { await client.executeMultiple(schema); }
   catch (error) { client.close(); throw error; }
   return {
